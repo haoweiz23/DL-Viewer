@@ -1,12 +1,11 @@
 # DL-Viewer
 A Deep Learning Viewer Tools for image viewer, data anlysis, edit, plot and so on. Implemented by PyQt Tools and Pytorch.
 
-[Awesome Fine-grained Visual Classification](#Awesome_Fine-grained_Visual_Classification)
 - [Introduction](#Introduction)
 - [Instruction](#Instruction)
 ------------
 
-##Introduction
+## Introduction
 ### Fuctions:
 - Drag and drop multiple pictures or pictures in folders and display them.
 - Auto Resize and grid layout the pictures.
@@ -19,7 +18,7 @@ A Deep Learning Viewer Tools for image viewer, data anlysis, edit, plot and so o
 - Faster heatmap generazation.
 - Review, pick images and generate image paths txt file. 
 
-##Instruction
+## Instruction
 #### 1. Install required packages.
 ``` python
 pip install -r requirements.txt
