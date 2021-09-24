@@ -5,6 +5,8 @@ import os
 import matplotlib.pyplot as plt
 from ui import Ui_MainWindow
 from qt_material import apply_stylesheet
+
+
 # from utils import gradcam
 
 
@@ -51,11 +53,10 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         self.page3_open_file.clicked.connect(self.call_back_page3_button_open_file)
         self.page3_img_list_widget.currentRowChanged.connect(self.call_back_page3_img_list_widget_clicked)
         self.page3_img_list_widget.clicked.connect(self.call_back_page3_img_list_widget_clicked)
+        self.page3_build.clicked.connect(self.call_back_page3_img_list_widget_clicked)
 
-        self.message = message(self)
-        self.message.signal.connect(self.heatmap_param_dialog)
-        self.dialog = childWindow()
-        self.page3_heatmap.clicked.connect(self.dialog.show)
+        self.page3_heatmap.toggled.connect(self.call_back_clicked_page3_heatmap)
+        self.page3_bbox.toggled.connect(self.call_back_clicked_page3_boudingbox)
 
         self.H_Max, self.W_Max = 960, 960
         self.page1_imglistWidget.dropEvent = self.dropEvent
@@ -70,21 +71,6 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         self.mousePosX, self.mousePosY = 120, 38
         self.mousePosX_gap, self.mousePosY_gap = 0, 0
         self.mousePosX_Flag, self.mousePosY_Flag = False, False
-
-    def heatmap_param_dialog(self):
-        # QMessageBox.information(self, 'Warning', 'Success', QMessageBox.Ok)
-        Ui_Dialog().show()
-
-        # self.toolBar.setStyleSheet("QToolBar{spacing:8px;}")
-        # self.actionView.icon.setStyleSheet("QToolBar{spacing:8px;}")
-
-        # for i in self.children():
-        #     # 根据实际情况去过滤一些不带焦点功能的子组件
-        #     if isinstance(i, QVBoxLayout) or isinstance(i, QHBoxLayout) \
-        #             or isinstance(i, QLayout) or isinstance(i, QAction):
-        #         pass
-        #     else:
-        #         i.setFocusPolicy(Qt.NoFocus)
 
     def eventFilter(self, objwatched, event):
         eventType = event.type()
@@ -112,6 +98,12 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
 
     def call_back_action_actionEdit(self):
         self.stackedWidget.setCurrentIndex(2)
+
+    def call_back_clicked_page3_heatmap(self):
+        self.page3_stackedWidget.setCurrentIndex(0)
+
+    def call_back_clicked_page3_boudingbox(self):
+        self.page3_stackedWidget.setCurrentIndex(1)
 
     def call_back_push_button_load_table(self):
         file, filetype = QFileDialog.getOpenFileName(self, "Select file", "",
@@ -170,12 +162,6 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         except Exception as e:
             print(e)
 
-    # def call_back_page3_heatmap(self):
-    #     try:
-    #
-    #     except Exception as e:
-    #         print(e)
-
     def call_back_page3_button_open_file(self):
         files, filetype = QFileDialog.getOpenFileNames(self, "Select files", ".",
                                                        "All Files (*);;Img Files (*.png, *.jpg, *.jpeg)")
@@ -197,13 +183,36 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
 
     def call_back_page3_img_list_widget_clicked(self, event):  # set background_img
         try:
-            items = self.page3_img_list_widget.selectedItems()
-            for item in items:
-                h, w = self.page3_target_img.height(), self.page3_target_img.width()
-                img = QPixmap(item.toolTip()).scaled(w, h, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-                self.page3_target_img.setPixmap(img)
+            item = self.page3_img_list_widget.selectedItems()[0]
 
-                self.page3_result_img.setPixmap(img)
+            h, w = self.page3_target_img.height(), self.page3_target_img.width()
+            img = QPixmap(item.toolTip()).scaled(w, h, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.page3_target_img.setPixmap(img)
+            # self.page3_result_img.setPixmap(img)
+
+            if self.page3_heatmap.isChecked():
+                from lib.gradCam import GradCAM
+                import cv2
+                from PIL import Image
+                img_path = item.toolTip()
+                model_path = self.page3_model_path.text().strip()
+                model_name = self.page3_model_name.currentText()
+                select_t_layer = False if self.page3_target_layer.currentText() == 'Auto' else True
+                if self.page3_model_path.text().strip() is not '':
+                    class_index = int(self.page3_category.text().strip())
+                else:
+                    class_index = None
+                grad_cam = GradCAM(img_path, model_name, model_path, select_t_layer, class_index)
+                print('Class_index for {} is {}.'.format(img_path, grad_cam.class_index))
+                heat_map = grad_cam()
+                # img = QPixmap(item.toolTip()).scaled(w, h, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                heat_map = cv2.cvtColor(heat_map, cv2.COLOR_BGR2RGB)
+                heat_map = Image.fromarray(heat_map)
+                heat_map = heat_map.toqpixmap()
+                heat_map = heat_map.scaled(w, h, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                # self.page3_result_img.setPixmap(QPixmap(''))
+                self.page3_result_img.setPixmap(heat_map)
+
         except Exception as e:
             print(e)
 
