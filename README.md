@@ -46,6 +46,6 @@ In this area, you can use "Load Table" button to load your model train log. Use 
 ![](./figures/plot_figure1.png)
 
 #### 2. Fuction Area 3: Edit
-In this area, you can load several images and generate heatmaps for them in "heatmap mode". You can also load your pretrained weights in "model path". Set target category for "gradCAM" method. Then use build or just simply select your target image in images gallery.Then the heatmap will be generated. Further, it also support upload your "custom" model. However, if your model is OrderedDict instead of Module, you should declare your model definition code in "lib/utils.py".
+In this area, you can load several images and generate heatmaps for them in "heatmap mode". You can also load your pretrained weights in "model path". Set target category for "gradCAM" method. Then use build or just simply select your target image in images gallery.Then the heatmap will be generated. Further, it also support upload your "custom" model. However, if your model is OrderedDict instead of Module, you should declare your model definition code in "lib/utils.py". You can set target layer manually by set "Target Layer" as manual.
 
 ![](./figures/edit.png)
