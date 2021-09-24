@@ -1,3 +1,5 @@
 qt-material
 pyqt5
 opencv-python
+torch
+torchvision

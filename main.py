@@ -51,6 +51,7 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_load_table.clicked.connect(self.call_back_push_button_load_table)
         self.pushButton_build.clicked.connect(self.call_back_push_button_build)
         self.page3_open_file.clicked.connect(self.call_back_page3_button_open_file)
+        self.page3_open_model_path.clicked.connect(self.call_back_page3_button_open_model_path)
         self.page3_img_list_widget.currentRowChanged.connect(self.call_back_page3_img_list_widget_clicked)
         self.page3_img_list_widget.clicked.connect(self.call_back_page3_img_list_widget_clicked)
         self.page3_build.clicked.connect(self.call_back_page3_img_list_widget_clicked)
@@ -71,6 +72,9 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         self.mousePosX, self.mousePosY = 120, 38
         self.mousePosX_gap, self.mousePosY_gap = 0, 0
         self.mousePosX_Flag, self.mousePosY_Flag = False, False
+
+        self.page2_tableWidget.verticalHeader().setVisible(True)
+        self.page2_tableWidget.horizontalHeader().setVisible(True)
 
     def eventFilter(self, objwatched, event):
         eventType = event.type()
@@ -172,6 +176,13 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         except:
             pass
 
+    def call_back_page3_button_open_model_path(self):
+        file, filetype = QFileDialog.getOpenFileName(self, "Select file", ".", "All Files (*);;Model Files (*.pth, *.pt)")
+        try:
+            self.page3_model_path.setText(file)
+        except:
+            pass
+
     def additem(self, img_path, obj, set_text=True):
         pix1 = QPixmap(img_path).scaled(self.page1_imglistWidget.iconSize())
         item = QListWidgetItem()
@@ -188,9 +199,12 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
             h, w = self.page3_target_img.height(), self.page3_target_img.width()
             img = QPixmap(item.toolTip()).scaled(w, h, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.page3_target_img.setPixmap(img)
-            # self.page3_result_img.setPixmap(img)
+            self.page3_result_img.setPixmap(QPixmap(''))
+            import time
+            time.sleep(1)
 
             if self.page3_heatmap.isChecked():
+
                 from lib.gradCam import GradCAM
                 import cv2
                 from PIL import Image
@@ -210,7 +224,6 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
                 heat_map = Image.fromarray(heat_map)
                 heat_map = heat_map.toqpixmap()
                 heat_map = heat_map.scaled(w, h, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-                # self.page3_result_img.setPixmap(QPixmap(''))
                 self.page3_result_img.setPixmap(heat_map)
 
         except Exception as e:

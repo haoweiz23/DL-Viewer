@@ -32,8 +32,11 @@ def load_model(model_name, model_path):
                 from Net import Net()
                 model=Net()
                 """
-                model = getattr(models, model_name)(pretrained=False)
-                model.load_state_dict(torch.load(model_path))
+                if model_name == 'custom':
+                    return
+                else:
+                    model = getattr(models, model_name)(pretrained=False)
+                    model.load_state_dict(torch.load(model_path))
             else:
                 model = torch.load(model_name)
 
