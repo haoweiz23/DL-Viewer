@@ -17,6 +17,7 @@ A Deep Learning Viewer Tools for image viewer, data anlysis, edit, plot and so o
 - Analysis of data set, e.g., class number and data distribution.
 - Faster heatmap generazation.
 - Review, pick images and generate image paths txt file. 
+- Load table data from paste board. 
 
 ## Instruction
 #### 1. Install required packages.

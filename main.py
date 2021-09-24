@@ -7,33 +7,6 @@ from ui import Ui_MainWindow
 from qt_material import apply_stylesheet
 
 
-# from utils import gradcam
-
-
-class ModelSetting_Ui_Dialog(object):
-    def setupUi(self, Dialog):
-        Dialog.setObjectName("Model Setting")
-        Dialog.resize(400, 300)
-        self.pushButton = QPushButton(Dialog)
-        self.pushButton.setGeometry(QRect(160, 100, 75, 23))
-        self.pushButton.setObjectName("pushButton")
-        Dialog.setWindowFlags(Qt.WindowStaysOnTopHint)  # 设置窗体总显示在最上面
-        self.retranslateUi(Dialog)
-        QMetaObject.connectSlotsByName(Dialog)
-
-    def retranslateUi(self, Dialog):
-        _translate = QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.pushButton.setText(_translate("Dialog", "PushButton"))
-
-
-class ModelSetting(QDialog):
-    def __init__(self):
-        QDialog.__init__(self)
-        self.child = ModelSetting_Ui_Dialog()
-        self.child.setupUi(self)
-
-
 class MyMainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, parent=None):
@@ -49,6 +22,7 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         self.page3_clear.setIcon(QIcon("./icons/clear.png"))
 
         self.pushButton_load_table.clicked.connect(self.call_back_push_button_load_table)
+        self.page2_load_clip_board.clicked.connect(self.call_back_push_button_load_from_clipboard)
         self.pushButton_build.clicked.connect(self.call_back_push_button_build)
         self.page3_open_file.clicked.connect(self.call_back_page3_button_open_file)
         self.page3_open_model_path.clicked.connect(self.call_back_page3_button_open_model_path)
@@ -118,6 +92,31 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
             spliter = self.comboBox_spliter.currentText()
             gap_line = self.spinBox_gap_line.value()
             import re
+            n = self.page2_tableWidget.columnCount()
+
+            self.page2_tableWidget.setRowCount(len(list(range(0, len(log), gap_line))))
+
+            for i in range(0, len(log), gap_line):
+                pattern = re.compile(r"\d+\.?\d*")
+                res = re.findall(pattern, log[i].strip())
+                self.page2_tableWidget.setColumnCount(n + len(res))
+                for j in range(len(res)):
+                    row_item = QTableWidgetItem(res[j])
+                    self.page2_tableWidget.setItem(i, n + j, row_item)
+
+        except Exception as e:
+            print(e)
+
+    def call_back_push_button_load_from_clipboard(self):
+
+        try:
+            log = clipboard.mimeData()
+            if not (log.formats() == ['text/plain']):
+                return
+            log = log.text().strip().split('\n')
+            spliter = self.comboBox_spliter.currentText()
+            gap_line = self.spinBox_gap_line.value()
+            import re
 
             n = self.page2_tableWidget.columnCount()
 
@@ -152,17 +151,11 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
             titles = [x for x in self.page2_y_title.toPlainText().split(';')]
             for i in range(len(y_s)):
                 plt.plot(x_s, y_s[i], color=color[i], label=titles[i])
+            plt.xlabel(self.page2_x_title.toPlainText())
             plt.legend()
             plt.show()
             plt.title(self.page2_fig_title.toPlainText())
 
-            # w, h, c = img.shape
-            # frame = QImage(img, w, h, QImage.Format_RGB888)
-            # pix = QPixmap.fromImage(frame)
-            # item = QGraphicsPixmapItem(pix)
-            # scene = QGraphicsScene()
-            # scene.addItem(item)
-            # self.page2_graphicsView.setScene(scene)
         except Exception as e:
             print(e)
 
@@ -200,8 +193,6 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
             img = QPixmap(item.toolTip()).scaled(w, h, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.page3_target_img.setPixmap(img)
             self.page3_result_img.setPixmap(QPixmap(''))
-            import time
-            time.sleep(1)
 
             if self.page3_heatmap.isChecked():
 
@@ -375,6 +366,7 @@ class message(QThread):
 if __name__ == "__main__":
     QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     app = QApplication(sys.argv)
+    clipboard = app.clipboard()
     myWin = MyMainWindow()
     apply_stylesheet(app, theme='default_light.xml')
     myWin.show()
